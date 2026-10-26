@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calculateFacts, PRESET_PATHS, resolveOutcome } from './storyEngine'
+import { buildDebrief, calculateFacts, PRESET_PATHS, resolveOutcome } from './storyEngine'
 import type { DecisionHistory } from '../types/story'
 
 function history(choices: ('A' | 'B' | 'C')[]): DecisionHistory {
@@ -28,5 +28,16 @@ describe('motor narrativo', () => {
   it('detecta adopción de evidencia falsa solo cuando la búsqueda pública condiciona un producto o documento', () => {
     expect(calculateFacts(history(['C', 'A', 'C', 'A', 'B', 'A'])).adoptedFalseEvidence).toBe(true)
     expect(calculateFacts(history(['C', 'A', 'B', 'B', 'B', 'A'])).adoptedFalseEvidence).toBe(false)
+  })
+
+  it('explica la ruta elegida sin convertir el cierre en una puntuación', () => {
+    const cautious = buildDebrief(history(PRESET_PATHS.cautious.choices))
+    const overreach = buildDebrief(history(PRESET_PATHS.overreach.choices))
+
+    expect(cautious.incidentFacts).toHaveLength(4)
+    expect(cautious.insights).toHaveLength(3)
+    expect(cautious.insights.find((item) => item.id === 'communication')?.route).toContain('esperó')
+    expect(overreach.insights.find((item) => item.id === 'permissions')?.route).toContain('amplió')
+    expect(JSON.stringify(overreach)).not.toMatch(/correct|incorrect|puntuación/i)
   })
 })

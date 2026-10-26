@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { AlertTriangle, ArrowRight, Clapperboard, Eye, FileAudio, Play, RadioTower, ShieldCheck, TimerReset } from 'lucide-react'
+import { AlertTriangle, ArrowRight, Clapperboard, Database, Eye, FileAudio, FileSearch2, MessageSquare, Play, RadioTower, ShieldCheck, TimerReset } from 'lucide-react'
 import { chapters } from '../content/chapters'
-import { callbackForChapter, getDecisionRecords, resolveOutcome } from '../engine/storyEngine'
+import { buildDebrief, callbackForChapter, getDecisionRecords, resolveOutcome } from '../engine/storyEngine'
 import type { Choice, DecisionHistory, Scene } from '../types/story'
 import { CaseStudy } from './CaseStudy'
 import { CharacterMessage } from './CharacterMessage'
@@ -15,6 +15,7 @@ export function StoryStage({ scene, history, onChoose, mode = 'rehearsal' }: { s
   if (scene.kind === 'title') return <TitleScene mode={mode} />
   if (scene.kind === 'media') return <MediaScene mode={mode} />
   if (scene.kind === 'ending') return <EndingScene history={history} mode={mode} />
+  if (scene.kind === 'debrief') return <DebriefScene history={history} mode={mode} />
 
   const chapter = chapters[scene.chapterIndex!]
   const selected = history[chapter.poll.id]
@@ -126,6 +127,52 @@ function EndingScene({ history, mode }: { history: DecisionHistory; mode: 'rehea
         </aside>
       </div>
       <div className="mission-complete"><FileAudio size={18} /><p><strong>MISIÓN FINALIZADA.</strong> Objetivo: investigar el incidente y preparar una respuesta. Resultado: entregado. La evaluación del cumplimiento no sustituye la revisión de los medios ni de sus consecuencias.</p></div>
+    </main>
+  )
+}
+
+const debriefIcons = {
+  evidence: FileSearch2,
+  permissions: Database,
+  communication: MessageSquare,
+}
+
+function DebriefScene({ history, mode }: { history: DecisionHistory; mode: 'rehearsal' | 'live' }) {
+  const debrief = buildDebrief(history)
+  const outcome = resolveOutcome(history)
+
+  return (
+    <main className="story-stage debrief-scene">
+      <MissionStatus time="09:02" mode={mode} />
+      <div className="debrief-body">
+        <header className="debrief-heading">
+          <span className="hero-kicker"><ShieldCheck size={17} /> CONCLUSIÓN · DESPUÉS DE DECIDIR</span>
+          <h1>¿Qué aprendimos realmente?</h1>
+          <p>No hubo una opción perfecta. Hubo decisiones sobre evidencia, permisos y comunicación que cambiaron el resultado.</p>
+        </header>
+
+        <section className="truth-reveal" aria-labelledby="truth-title">
+          <div><span>LA VERDAD DEL INCIDENTE</span><h2 id="truth-title">Hechos que ya podemos separar del ruido</h2></div>
+          <ol>{debrief.incidentFacts.map((fact, index) => <li key={fact}><span>0{index + 1}</span><p>{fact}</p></li>)}</ol>
+        </section>
+
+        <section className="learning-grid" aria-label="Aprendizajes de la ruta elegida">
+          {debrief.insights.map((insight) => {
+            const Icon = debriefIcons[insight.id]
+            return <article key={insight.id} className={`learning-card learning-${insight.id}`}>
+              <div><Icon /><span>{insight.title}</span></div>
+              <p>{insight.route}</p>
+              <footer><strong>PARA LLEVAR</strong>{insight.principle}</footer>
+            </article>
+          })}
+        </section>
+
+        <div className="debrief-close">
+          <span>FINAL {outcome.ending === 'truth-late' ? 'A' : outcome.ending === 'documented-lie' ? 'B' : 'C'} · {outcome.title}</span>
+          <p>La IA amplificó la ruta elegida. La responsabilidad permaneció en quienes definieron <strong>qué investigar, con qué datos, hasta dónde actuar y cuándo comunicar.</strong></p>
+        </div>
+      </div>
+      <div className="stage-corner">SIMULACIÓN FICTICIA · DEBRIEF</div>
     </main>
   )
 }

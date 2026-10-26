@@ -13,6 +13,7 @@ function notesFor(scene: Scene): string {
   if (scene.kind === 'title') return 'Abre con diez segundos de silencio. Presenta ASTER como ficción y explica que el público decidirá bajo presión, sin respuestas “correctas”. Avanza cuando todos puedan ver la pantalla.'
   if (scene.kind === 'media') return 'Reproduce cada clip manualmente y deja una pausa breve entre ambos. El segundo fue generado con Seedance. Cierra preguntando qué señales visuales dejaron de ser confiables y evita presentar la comparación como una prueba de que toda imagen es falsa.'
   if (scene.kind === 'ending') return 'Lee primero el resultado, después el rastro causal. Cierre: durante esta historia, NOVA tomó decisiones; nosotros elegimos datos, fuentes, alcance y momento. La IA amplifica el alcance de nuestras decisiones, no elimina nuestra responsabilidad.'
+  if (scene.kind === 'debrief') return 'Haz una pausa antes de revelar los hechos. Aclara que no estás corrigiendo al público: estás comparando lo que se sabía al decidir con lo que se sabe al final. Recorre las tres tarjetas y cierra preguntando qué control humano habría cambiado más su ruta.'
   return chapters[scene.chapterIndex!].notes[scene.kind as keyof typeof chapters[number]['notes']]
 }
 
@@ -60,7 +61,7 @@ export function RehearsalPresenterView() {
 
   const applyPreset = (choices: Choice[]) => {
     setHistory(Object.fromEntries(choices.map((choice, index) => [`q${index + 1}`, choice])))
-    setSceneIndex(scenes.length - 1)
+    setSceneIndex(scenes.findIndex((item) => item.kind === 'ending'))
     setShowReset(false)
   }
 

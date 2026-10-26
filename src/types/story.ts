@@ -1,6 +1,6 @@
 export type Choice = 'A' | 'B' | 'C'
 export type CharacterId = 'ines' | 'tomas' | 'nova'
-export type SceneKind = 'title' | 'media' | 'briefing' | 'dialogue' | 'decision' | 'aftermath' | 'case-study' | 'ending'
+export type SceneKind = 'title' | 'media' | 'briefing' | 'dialogue' | 'decision' | 'aftermath' | 'case-study' | 'ending' | 'debrief'
 export type EndingId = 'truth-late' | 'documented-lie' | 'limits-crossed'
 
 export interface Character {
@@ -53,7 +53,7 @@ export interface Chapter {
   dialogue: DialogueLine[]
   poll: Poll
   caseStudy: CaseStudy
-  notes: Record<Exclude<SceneKind, 'title' | 'media' | 'ending'>, string>
+  notes: Record<Exclude<SceneKind, 'title' | 'media' | 'ending' | 'debrief'>, string>
 }
 
 export interface Scene {
@@ -89,6 +89,18 @@ export interface StoryOutcome {
   learning: string
   facts: StoryFacts
   rationale: string[]
+}
+
+export interface DebriefInsight {
+  id: 'evidence' | 'permissions' | 'communication'
+  title: string
+  route: string
+  principle: string
+}
+
+export interface StoryDebrief {
+  incidentFacts: string[]
+  insights: DebriefInsight[]
 }
 
 export type DecisionHistory = Partial<Record<string, Choice>>

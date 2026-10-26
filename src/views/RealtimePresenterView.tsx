@@ -27,6 +27,7 @@ function notesFor(scene: Scene): string {
   if (scene.kind === 'title') return 'Abre con diez segundos de silencio. Explica que el público decidirá desde un único enlace y que los porcentajes aparecerán en esta misma presentación.'
   if (scene.kind === 'media') return 'Reproduce cada clip manualmente y deja una pausa breve. El segundo fue generado con Seedance. Evita presentar la comparación como prueba de que toda imagen es falsa.'
   if (scene.kind === 'ending') return 'Lee primero el desenlace y después el rastro causal. Cierre: la IA amplifica el alcance de nuestras decisiones, no elimina nuestra responsabilidad.'
+  if (scene.kind === 'debrief') return 'Presenta primero la verdad del incidente y después conecta las tres tarjetas con las decisiones reales del público. No hables de aciertos o errores: destaca los costes visibles y pregunta qué control humano habría cambiado más la ruta.'
   if (scene.kind === 'decision') return 'Abre la votación desde la propia diapositiva. Observa las barras en vivo, cierra cuando haya suficiente participación y revela la mayoría. Si hay empate, resuélvelo de forma explícita.'
   return chapters[scene.chapterIndex!].notes[scene.kind as keyof typeof chapters[number]['notes']]
 }

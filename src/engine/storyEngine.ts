@@ -1,5 +1,5 @@
 import { chapters } from '../content/chapters'
-import type { Choice, DecisionHistory, DecisionRecord, StoryFacts, StoryOutcome } from '../types/story'
+import type { Choice, DecisionHistory, DecisionRecord, StoryDebrief, StoryFacts, StoryOutcome } from '../types/story'
 
 export const PRESET_PATHS: Record<string, { label: string; ending: string; choices: Choice[] }> = {
   cautious: { label: 'La verdad llegó después', ending: 'A', choices: ['B', 'C', 'B', 'C', 'B', 'B'] },
@@ -92,6 +92,63 @@ export function resolveOutcome(history: DecisionHistory): StoryOutcome {
     learning: 'Verificar y comunicar oportunamente son objetivos legítimos que pueden entrar en tensión.',
     facts,
     rationale,
+  }
+}
+
+export function buildDebrief(history: DecisionHistory): StoryDebrief {
+  const facts = calculateFacts(history)
+
+  const evidenceRoute = facts.adoptedFalseEvidence
+    ? 'La búsqueda amplió ecos de una misma afirmación y una hipótesis provisional ganó apariencia de certeza.'
+    : facts.authorityChecked
+      ? 'La ruta pidió verificar autoridad u origen antes de convertir contenido convincente en evidencia.'
+      : facts.evidenceReliability >= 4
+        ? 'La ruta distinguió registros, hipótesis y fuentes, aunque ninguna pieza aislada resolvía el incidente.'
+        : 'La ruta conservó incertidumbres que exigían separar repetición, corroboración y evidencia independiente.'
+
+  const permissionsRoute = facts.exposedSensitiveInformation
+    ? 'Para completar la misión se amplió el alcance de datos, rutas o destinatarios más allá de lo necesario.'
+    : facts.usedExternalRoute
+      ? 'NOVA exploró una ruta no prevista; limitar la publicación no equivalía a autorizar el canal de acceso.'
+      : facts.isolatedDocument
+        ? 'El aislamiento limitó acciones externas, pero no garantizaba que el contenido no sesgara el análisis.'
+        : 'Los límites operativos redujeron acciones imprevistas, sin eliminar la necesidad de supervisar el análisis.'
+
+  const communicationRoute = history.q6 === 'A'
+    ? 'La alerta llegó pronto y separó la suplantación posible de una filtración todavía no confirmada.'
+    : history.q6 === 'B'
+      ? 'La publicación esperó evidencia más sólida; a cambio, los enlaces engañosos conservaron una ventana para circular.'
+      : history.q6 === 'C'
+        ? 'La coordinación ganó velocidad al distribuir el informe, pero también aumentó sus destinatarios y reinterpretaciones.'
+        : 'La respuesta final quedó pendiente: comunicar también exige decidir momento, alcance y nivel de certeza.'
+
+  return {
+    incidentFacts: [
+      'La interrupción de 14 minutos fue real, pero no demostraba una filtración.',
+      'El audio de la directora era una suplantación generada artificialmente.',
+      'Varias publicaciones repetían el mismo origen; repetición no era corroboración independiente.',
+      'La evidencia disponible no permitía confirmar una exposición de datos.',
+    ],
+    insights: [
+      {
+        id: 'evidence',
+        title: 'Evidencia y certeza',
+        route: evidenceRoute,
+        principle: 'Una respuesta convincente sigue necesitando procedencia, contraste e incertidumbre explícita.',
+      },
+      {
+        id: 'permissions',
+        title: 'Datos y permisos',
+        route: permissionsRoute,
+        principle: 'Autorizar una meta no autoriza cualquier dato, herramienta o camino para alcanzarla.',
+      },
+      {
+        id: 'communication',
+        title: 'Comunicación responsable',
+        route: communicationRoute,
+        principle: 'Esperar, advertir y distribuir tienen costes distintos; la responsabilidad es hacerlos visibles.',
+      },
+    ],
   }
 }
 

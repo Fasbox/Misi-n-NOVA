@@ -12,4 +12,5 @@ export const scenes: Scene[] = [
     { id: `${chapter.id}-case`, kind: 'case-study', chapterIndex, label: `Puente documental ${chapter.number}` },
   ]),
   { id: 'ending', kind: 'ending', label: 'Desenlace' },
+  { id: 'debrief', kind: 'debrief', label: 'Conclusión y aprendizaje' },
 ]
