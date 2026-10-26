@@ -22,7 +22,7 @@ export function StoryStage({ scene, history, onChoose, mode = 'rehearsal' }: { s
   const callback = callbackForChapter(scene.chapterIndex!, history)
 
   return (
-    <main className={`story-stage scene-${scene.kind}`}>
+    <main className={`story-stage scene-${scene.kind} ${scene.kind === 'decision' ? `decision-theme-${chapter.number}` : ''}`}>
       <MissionStatus time={chapter.time} chapter={chapter.number} mode={mode} />
       <div className="stage-body">
         {scene.kind === 'briefing' && chapter.number === 1 && <IncidentAudio setup={chapter.setup} evidence={chapter.evidence} />}
@@ -68,9 +68,12 @@ function TitleScene({ mode }: { mode: 'rehearsal' | 'live' }) {
           <p>Operación Última Señal</p>
           <small>ASTER · LUNES · 08:17</small>
         </div>
-        <div className="signal-orbit" aria-hidden="true"><div className="orbit orbit-one" /><div className="orbit orbit-two" /><div className="nova-core">NOVA<span>EN ESPERA</span></div></div>
+        <div className="title-access">
+          <div className="signal-orbit" aria-hidden="true"><div className="orbit orbit-one" /><div className="orbit orbit-two" /><div className="nova-core">NOVA<span>EN ESPERA</span></div></div>
+          <JoinByQR mode={mode} opening />
+        </div>
       </div>
-      <div className="opening-footer"><span>SIMULACIÓN FICTICIA</span><p>Las decisiones serán defendibles. Sus efectos, persistentes.</p><ArrowRight /></div>
+      <div className="opening-footer"><span>SIMULACIÓN FICTICIA</span><p>Ingresa ahora. Las decisiones serán defendibles; sus efectos, persistentes.</p><ArrowRight /></div>
     </main>
   )
 }

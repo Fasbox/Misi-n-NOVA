@@ -93,7 +93,7 @@ export function RealtimeParticipantView() {
   const questionLabel = useMemo(() => `DECISIÓN ${questionIndex + 1} DE ${QUESTION_IDS.length}`, [questionIndex])
 
   return (
-    <main className="live-participant-page">
+    <main className={`live-participant-page decision-theme-${questionIndex + 1}`}>
       <header className="live-participant-header">
         <div><Radio size={17} /><strong>ÚLTIMA SEÑAL</strong></div>
         <span className={`live-connection ${connection}`}><i />{connection === 'connected' ? 'Conectado' : connection === 'error' ? 'Sin conexión' : 'Conectando'}</span>
@@ -125,7 +125,7 @@ export function RealtimeParticipantView() {
         {connection === 'connected' && state && !missionComplete && ['closed', 'revealed'].includes(state.pollStatus) && <div className="live-state-screen"><div className="closed-icon"><LockKeyhole /></div><span>{questionLabel}</span><h1>{state.pollStatus === 'revealed' ? 'Resultado registrado' : 'Votación cerrada'}</h1><p>{vote ? `Tu voto por la opción ${vote.choice} quedó registrado.` : 'La votación terminó antes de que se registrara una selección.'} Sigue la historia en Teams.</p></div>}
       </section>
 
-      <footer className="live-privacy"><Cloud size={15} /><p>No solicitamos nombre ni correo. Firebase asigna a este navegador un identificador técnico anónimo; esto no impide votar desde otro dispositivo o una ventana privada.</p></footer>
+      <footer className="live-privacy"><Cloud size={15} /><p>No solicitamos nombre ni correo. Este navegador recibe un identificador técnico anónimo; esto no impide votar desde otro dispositivo o una ventana privada.</p></footer>
     </main>
   )
 }

@@ -68,7 +68,7 @@ function AdminLogin({ onAuthenticated }: { onAuthenticated: (user: User) => void
         <button disabled={loading}>{loading ? <><LoaderCircle className="spin" /> Verificando…</> : 'Entrar a la presentación'}</button>
       </form>
       {error && <div className="admin-error"><CircleAlert />{error}</div>}
-      <a href="/presenter?modo=ensayo">Abrir modo ensayo sin Firebase <ExternalLink size={14} /></a>
+      <a href="/presenter?modo=ensayo">Abrir modo ensayo local <ExternalLink size={14} /></a>
     </section>
   </main>
 }

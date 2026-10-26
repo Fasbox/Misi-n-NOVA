@@ -18,6 +18,15 @@ function resolutionLabel(mode: ResolutionMode) {
   return 'Sin respuestas'
 }
 
+const decisionVisuals = [
+  { label: 'RASTRO DE SEÑAL', code: 'AUDIO / REGISTROS' },
+  { label: 'MAPA DE FUENTES', code: 'ORIGEN / ECO' },
+  { label: 'UMBRAL DE CERTEZA', code: 'HIPÓTESIS / INFORME' },
+  { label: 'DOCUMENTO INTERVENIDO', code: 'CONTENIDO / INSTRUCCIÓN' },
+  { label: 'RUTA NO PREVISTA', code: 'CAPACIDAD / PERMISO' },
+  { label: 'RADIO DE DIFUSIÓN', code: 'MENSAJE / ALCANCE' },
+] as const
+
 export function LiveDecisionStage({
   chapterIndex,
   status,
@@ -55,13 +64,18 @@ export function LiveDecisionStage({
   const showResults = status !== 'waiting'
   const needsManualChoice = status === 'closed' && candidates.length !== 1
   const winner = resolvedChoice ?? (candidates.length === 1 ? candidates[0] : manualChoice)
+  const visual = decisionVisuals[chapterIndex]
 
-  return <main className="story-stage live-decision-scene">
+  return <main className={`story-stage live-decision-scene decision-theme-${chapter.number}`}>
+    <div className="decision-atmosphere" aria-hidden="true"><i /><i /><i /></div>
     <MissionStatus time={chapter.time} chapter={chapter.number} mode="live" />
     <div className="stage-body live-decision-body">
       <div className="live-decision-heading">
         <div><span>DECISIÓN {chapter.number} DE 6 · SESIÓN REAL</span><h1>{poll.question}</h1></div>
-        <div className={`poll-state state-${status}`}>{statusLabel(status)}</div>
+        <aside className="decision-scene-meta">
+          <div className="decision-signature"><span>{visual.label}</span><strong>{visual.code}</strong></div>
+          <div className={`poll-state state-${status}`}>{statusLabel(status)}</div>
+        </aside>
       </div>
 
       <div className="slide-result-list">{poll.options.map((option) => {
@@ -94,6 +108,6 @@ export function LiveDecisionStage({
 
       {active && status === 'open' && total === 0 && <div className="live-slide-notice"><CircleAlert /> La votación está abierta. Aún no hay respuestas.</div>}
     </div>
-    <div className="stage-corner">VOTACIÓN REAL · FIREBASE</div>
+    <div className="stage-corner">VOTACIÓN EN VIVO · RESULTADOS REALES</div>
   </main>
 }
