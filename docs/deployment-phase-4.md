@@ -37,4 +37,10 @@ Después se comprueban directamente las rutas `/presenter` y `/participar?evento
 
 ## Estado
 
-Preparación local completada. Pendientes: repositorio remoto, conexión de Cloudflare, variables, primer despliegue, dominio autorizado y ensayo desde otro dispositivo.
+Preparación local completada y rama `main` publicada en:
+
+```text
+https://github.com/Fasbox/Misi-n-NOVA
+```
+
+Pendientes: conexión de Cloudflare, variables, primer despliegue, validación del dominio en Firebase si fuera necesaria y ensayo desde otro dispositivo.

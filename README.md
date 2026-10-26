@@ -2,6 +2,8 @@
 
 Experiencia narrativa interactiva para una presentación en vivo sobre evidencia, autonomía y responsabilidad al utilizar sistemas de IA.
 
+Repositorio: `https://github.com/Fasbox/Misi-n-NOVA`
+
 ## Estado
 
 - Fase 1: experiencia narrativa completa en **modo ensayo local**.
