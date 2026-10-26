@@ -1,0 +1,172 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function adminPath() {
+      return /databases/$(database)/documents/admins/$(request.auth.uid);
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && exists(adminPath())
+        && get(adminPath()).data.active == true
+        && get(adminPath()).data.role == 'presenter'
+        && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    function validQuestionId(questionId) {
+      return questionId in ['q1', 'q2', 'q3', 'q4', 'q5', 'q6'];
+    }
+
+    function validChoice(choice) {
+      return choice in ['A', 'B', 'C'];
+    }
+
+    function validSessionId(sessionId) {
+      return sessionId is string
+        && sessionId.size() >= 16
+        && sessionId.size() <= 80;
+    }
+
+    function validShowState() {
+      let data = request.resource.data;
+      return data.keys().hasAll([
+          'sessionId',
+          'activeSceneId',
+          'activeQuestionId',
+          'pollStatus',
+          'resolvedChoice',
+          'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'sessionId',
+          'activeSceneId',
+          'activeQuestionId',
+          'pollStatus',
+          'resolvedChoice',
+          'updatedAt'
+        ])
+        && validSessionId(data.sessionId)
+        && data.activeSceneId is string
+        && data.activeSceneId.size() > 0
+        && validQuestionId(data.activeQuestionId)
+        && data.pollStatus in ['waiting', 'open', 'closed', 'revealed']
+        && data.resolvedChoice in ['', 'A', 'B', 'C']
+        && data.updatedAt == request.time
+        && (
+          (data.pollStatus == 'revealed' && validChoice(data.resolvedChoice))
+          || (data.pollStatus != 'revealed' && data.resolvedChoice == '')
+        );
+    }
+
+    function activeQuestionIsOpen(eventId, sessionId, questionId) {
+      let state = get(/databases/$(database)/documents/events/$(eventId)/state/public).data;
+      return validQuestionId(questionId)
+        && state.sessionId == sessionId
+        && state.activeQuestionId == questionId
+        && state.pollStatus == 'open';
+    }
+
+    function validVote(uid) {
+      let data = request.resource.data;
+      return data.keys().hasAll(['uid', 'choice', 'createdAt'])
+        && data.keys().hasOnly(['uid', 'choice', 'createdAt'])
+        && data.uid == uid
+        && validChoice(data.choice)
+        && data.createdAt == request.time;
+    }
+
+    function validSession(sessionId) {
+      let data = request.resource.data;
+      return data.keys().hasAll(['sessionId', 'createdAt'])
+        && data.keys().hasOnly(['sessionId', 'createdAt'])
+        && validSessionId(sessionId)
+        && data.sessionId == sessionId
+        && data.createdAt == request.time;
+    }
+
+    function validCounts(counts, totalVotes) {
+      return counts is map
+        && counts.keys().hasAll(['A', 'B', 'C'])
+        && counts.keys().hasOnly(['A', 'B', 'C'])
+        && counts.A is int && counts.A >= 0
+        && counts.B is int && counts.B >= 0
+        && counts.C is int && counts.C >= 0
+        && totalVotes is int
+        && totalVotes == counts.A + counts.B + counts.C;
+    }
+
+    function validDecision(questionId) {
+      let data = request.resource.data;
+      return data.keys().hasAll([
+          'questionId',
+          'choice',
+          'counts',
+          'totalVotes',
+          'resolutionMode',
+          'tiedChoices',
+          'resolvedAt'
+        ])
+        && data.keys().hasOnly([
+          'questionId',
+          'choice',
+          'counts',
+          'totalVotes',
+          'resolutionMode',
+          'tiedChoices',
+          'resolvedAt'
+        ])
+        && validQuestionId(questionId)
+        && data.questionId == questionId
+        && validChoice(data.choice)
+        && validCounts(data.counts, data.totalVotes)
+        && data.resolutionMode in ['majority', 'tie', 'no-votes']
+        && data.tiedChoices is list
+        && data.tiedChoices.size() <= 3
+        && data.resolvedAt == request.time;
+    }
+
+    match /admins/{adminId} {
+      allow get: if isAdmin() && request.auth.uid == adminId;
+      allow list, create, update, delete: if false;
+    }
+
+    match /events/{eventId}/state/public {
+      allow get: if signedIn();
+      allow list: if false;
+      allow create, update: if isAdmin() && validShowState();
+      allow delete: if false;
+    }
+
+    match /events/{eventId}/sessions/{sessionId} {
+      allow get, list: if isAdmin();
+      allow create: if isAdmin() && validSession(sessionId);
+      allow update, delete: if false;
+    }
+
+    match /events/{eventId}/sessions/{sessionId}/decisions/{questionId} {
+      allow get, list: if isAdmin();
+      allow create: if isAdmin() && validDecision(questionId);
+      allow update, delete: if false;
+    }
+
+    match /events/{eventId}/sessions/{sessionId}/votes/{questionId}/responses/{uid} {
+      allow create: if signedIn()
+        && request.auth.token.firebase.sign_in_provider == 'anonymous'
+        && request.auth.uid == uid
+        && activeQuestionIsOpen(eventId, sessionId, questionId)
+        && validVote(uid);
+      allow get: if isAdmin() || (signedIn() && request.auth.uid == uid);
+      allow list: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
